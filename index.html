@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- ── Primary SEO ── -->
-  <title>Satoshi Nakamoto Wallet Cracker — Try to Crack the Genesis Block Bitcoin Wallet</title>
-  <meta name="description" content="Try your luck cracking Satoshi Nakamoto's Bitcoin genesis block wallet (1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa). Real secp256k1 cryptography, live BTC price, real attempt counter. Theoretically possible — odds: 1 in 10⁶⁸.">
-  <meta name="keywords" content="satoshi nakamoto wallet, bitcoin genesis block, bitcoin brute force, crack bitcoin wallet, secp256k1, bitcoin private key, satoshi bitcoin address, 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa, bitcoin puzzle">
+  <title>Satoshi Nakamoto Wallet Cracker — 21,953 Patoshi Wallets · ~1,097,650 BTC</title>
+  <meta name="description" content="Try your luck cracking any of Satoshi Nakamoto's 21,953 known wallets. Real secp256k1 cryptography, live BTC price, real attempt counter. Total prize: ~1,097,650 BTC (~$80 billion). Theoretically possible — odds: 1 in 10⁶⁸.">
+  <meta name="keywords" content="satoshi nakamoto wallet, bitcoin genesis block, bitcoin brute force, crack bitcoin wallet, secp256k1, bitcoin private key, satoshi bitcoin, patoshi wallets, 1 million bitcoin, bitcoin puzzle">
   <meta name="author" content="Satoshi Wallet Cracker">
   <meta name="robots" content="index, follow">
 
   <!-- ── Open Graph / Facebook ── -->
   <meta property="og:type"        content="website">
-  <meta property="og:title"       content="Satoshi Nakamoto Wallet Cracker — Can You Find His Private Key?">
-  <meta property="og:description" content="Real secp256k1 brute-force against Satoshi's genesis block wallet. Live BTC balance and price. Odds: 1 in 10⁶⁸ — but not zero.">
+  <meta property="og:title"       content="Satoshi Nakamoto Wallet Cracker — 21,953 Wallets · ~$80 Billion">
+  <meta property="og:description" content="Real secp256k1 brute-force against all 21,953 of Satoshi's known Patoshi wallets. Live BTC price. Total prize ~1,097,650 BTC. Odds: 1 in 10⁶⁸ — but not zero.">
   <meta property="og:locale"      content="en_US">
 
   <!-- ── Twitter Card ── -->
@@ -36,6 +36,7 @@
   </script>
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script src="satoshi_data.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -346,10 +347,14 @@
   <div class="match-panel">
     <div class="match-lbl">PRIVATE KEY — IMPORT INTO ELECTRUM / BITCOIN CORE / ANY BTC WALLET</div>
     <div class="match-val" id="m-privkey"></div>
-    <div class="match-lbl">CONFIRMED ADDRESS</div>
+    <div class="match-lbl">MATCHED PATOSHI WALLET ADDRESS</div>
     <div class="match-val" id="m-address"></div>
-    <div class="match-lbl">WALLET VALUE</div>
-    <div class="match-val" id="m-value" style="color:#ffcc00">calculating...</div>
+    <div class="match-lbl">THIS WALLET — BTC BALANCE</div>
+    <div class="match-val" id="m-wallet-btc" style="color:#ffcc00">calculating...</div>
+    <div class="match-lbl">THIS WALLET — USD VALUE</div>
+    <div class="match-val" id="m-wallet-usd" style="color:#ffcc00">calculating...</div>
+    <div class="match-lbl">SATOSHI TOTAL (ALL WALLETS)</div>
+    <div class="match-val" id="m-value" style="color:#886600">calculating...</div>
     <div class="match-note">
       ▸ This key has been saved to localStorage (will survive page refresh)<br>
       ▸ Import private key into Electrum: Wallet → Private Keys → Import<br>
@@ -367,7 +372,7 @@
     <div class="t-header">
       <div>
         <div class="t-title"><span style="color:#f7931a">₿</span> &nbsp;SATOSHI NAKAMOTO WALLET CRACKER &nbsp;—&nbsp; secp256k1 / P2PKH</div>
-        <div style="font-size:9px;color:#004400;letter-spacing:1px;margin-top:3px">Genesis Block · Block #0 · Jan 3 2009 · Real cryptography · No simulation</div>
+        <div style="font-size:9px;color:#004400;letter-spacing:1px;margin-top:3px">21,953 Patoshi Wallets · ~1,097,650 BTC · Real secp256k1 · No simulation</div>
       </div>
       <div class="t-status-area">
         <button id="demo-btn" onclick="showDemoMatch()">PREVIEW MATCH SCREEN</button>
@@ -378,18 +383,18 @@
 
     <!-- Target -->
     <div class="t-sec">
-      <div class="t-sec-label">TARGET — SATOSHI NAKAMOTO'S GENESIS WALLET</div>
+      <div class="t-sec-label">TARGET — ALL SATOSHI NAKAMOTO (PATOSHI) WALLETS</div>
       <div class="f-row">
-        <span class="f-lbl">ADDRESS</span>
-        <span class="f-val bright">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</span>
+        <span class="f-lbl">WALLETS</span>
+        <span class="f-val bright">21,953 known Patoshi addresses (blocks #1–#54,316)</span>
       </div>
       <div class="f-row" style="margin-bottom:2px">
         <span class="f-lbl">ORIGIN</span>
-        <span class="f-val dim">Block #0 (Genesis Block) — mined by Satoshi Nakamoto on January 3, 2009</span>
+        <span class="f-val dim">Mined by Satoshi Nakamoto 2009–2010 · identified via Patoshi pattern analysis</span>
       </div>
       <div class="f-row">
-        <span class="f-lbl">BTC BALANCE</span>
-        <span class="f-val gold" id="sv-bal"><span class="muted">querying blockchain.info...</span></span>
+        <span class="f-lbl">TOTAL BTC</span>
+        <span class="f-val gold">≈ 1,097,650 BTC &nbsp;<span style="color:#665500;font-size:10px">(~50 BTC per wallet · none ever moved)</span></span>
       </div>
       <div class="f-row">
         <span class="f-lbl">USD VALUE</span>
@@ -401,8 +406,8 @@
         <span style="font-size:10px;color:#004400;margin-left:6px">live · updates every 10s</span>
       </div>
       <div class="f-row">
-        <span class="f-lbl">TX COUNT</span>
-        <span class="f-val dim" id="sv-txcount"><span class="muted">...</span></span>
+        <span class="f-lbl">CHECK MODE</span>
+        <span class="f-val dim">hash160 set lookup · O(1) per key · uncompressed pubkey</span>
       </div>
     </div>
 
@@ -461,28 +466,28 @@
     <div class="t-sec explain-sec">
       <div class="t-sec-label">WHO IS SATOSHI NAKAMOTO?</div>
       <p class="explain-p">
-        Satoshi Nakamoto is the anonymous inventor of Bitcoin. On <strong>January 3rd, 2009</strong>, he mined
-        the very first Bitcoin block — the <strong>Genesis Block</strong> — and received the 50 BTC reward to the
-        address above. His true identity has never been revealed. He disappeared from the internet in 2011.
-        His wallets, spread across thousands of addresses, are estimated to hold over <strong>1,000,000 BTC</strong>.
-        None have ever moved.
+        Satoshi Nakamoto is the anonymous inventor of Bitcoin. Starting on <strong>January 3rd, 2009</strong>,
+        he mined thousands of early Bitcoin blocks using a distinctive mining pattern — now called the
+        <strong>Patoshi pattern</strong> — identified by researcher Sergio Lerner. These <strong>21,953 wallets</strong>
+        hold an estimated <strong>1,097,650 BTC</strong>. His true identity has never been revealed.
+        He disappeared from the internet in 2011. None of his coins have ever moved.
       </p>
 
       <div class="t-sec-label" style="margin-top:14px">HOW THIS TOOL WORKS</div>
       <p class="explain-p">
         Every Bitcoin wallet is locked by a <strong>256-bit private key</strong> — a random number between 1 and
         2<sup>256</sup>. This tool generates real random private keys using the actual <strong>secp256k1 elliptic
-        curve</strong> (the same algorithm Bitcoin uses), derives the corresponding wallet address via
-        SHA‑256 → RIPEMD‑160 → Base58Check encoding, and checks whether it matches Satoshi's address.
-        No tricks, no simulation — real cryptography running in your browser.
+        curve</strong>, derives the uncompressed public key, computes its <strong>hash160</strong>
+        (SHA‑256 → RIPEMD‑160), and checks it against a preloaded set of all 21,953 known Patoshi wallet
+        fingerprints in O(1) time. No tricks, no simulation — real cryptography running in your browser.
       </p>
 
       <div class="t-sec-label" style="margin-top:14px">WHY IT'S THEORETICALLY POSSIBLE</div>
       <p class="explain-p">
         The probability is never exactly zero. Every key this tool generates has an identical, nonzero chance
         of being correct — private keys have no ownership and no history. Bitcoin's security is purely
-        statistical. You could, in principle, find the key on your very next attempt. That's what makes
-        this interesting: it costs nothing to try, and the prize is <span id="explain-prize" style="color:#ffcc00">loading...</span>.
+        statistical. Checking <em>all</em> of Satoshi's wallets simultaneously multiplies your surface area
+        by 21,953×. The prize: <span id="explain-prize" style="color:#ffcc00">loading...</span>.
       </p>
     </div>
 
@@ -536,19 +541,15 @@ document.getElementById('status-txt').style.color = '#00aa33';
 // ─────────────────────────────────────────────────────────────
 //  BITCOIN ADDRESS DERIVATION
 // ─────────────────────────────────────────────────────────────
-const TARGET = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
 const B58_ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 function base58Encode(bytes) {
   let leading = 0;
   for (const b of bytes) { if (b !== 0) break; leading++; }
-
   let n = 0n;
   for (const b of bytes) n = n * 256n + BigInt(b);
-
   let out = '';
   while (n > 0n) { out = B58_ALPHA[Number(n % 58n)] + out; n /= 58n; }
-
   return '1'.repeat(leading) + out;
 }
 
@@ -560,22 +561,25 @@ function toHex(u8) {
   return s;
 }
 
-function deriveAddress(privKeyBytes) {
-  const pub      = secp.getPublicKey(privKeyBytes, true);   // 33 bytes compressed
-  const sha256p  = sha256(pub);                             // SHA256(pubkey)
-  const hash160  = ripemd160(sha256p);                      // RIPEMD160(sha256)
-
+// Returns the P2PKH address for a compressed pubkey (for display only)
+function deriveCompressedAddress(privKeyBytes) {
+  const pub      = secp.getPublicKey(privKeyBytes, true);
+  const h160     = ripemd160(sha256(pub));
   const versioned = new Uint8Array(21);
-  versioned[0] = 0x00;                                      // mainnet P2PKH
-  versioned.set(hash160, 1);
-
+  versioned[0] = 0x00;
+  versioned.set(h160, 1);
   const checksum = sha256(sha256(versioned)).subarray(0, 4);
-
   const full = new Uint8Array(25);
   full.set(versioned);
   full.set(checksum, 21);
-
   return base58Encode(full);
+}
+
+// Returns hash160 hex of the UNCOMPRESSED pubkey — what we check against the Patoshi set
+function deriveHash160Uncompressed(privKeyBytes) {
+  const pub  = secp.getPublicKey(privKeyBytes, false); // 65 bytes uncompressed
+  const h160 = ripemd160(sha256(pub));
+  return toHex(h160);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -677,7 +681,7 @@ function renderLog() {
 // ─────────────────────────────────────────────────────────────
 //  LIVE BTC DATA
 // ─────────────────────────────────────────────────────────────
-let btcPrice = null, btcBalance = null;
+let btcPrice = null;
 
 async function fetchPrice() {
   try {
@@ -689,21 +693,9 @@ async function fetchPrice() {
   } catch { document.getElementById('sv-price').textContent = 'API unavailable'; }
 }
 
-async function fetchBalance() {
-  try {
-    const d = await (await fetch(
-      'https://blockchain.info/rawaddr/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?cors=true&limit=0'
-    )).json();
-    btcBalance = d.final_balance / 1e8;
-    document.getElementById('sv-bal').textContent     = btcBalance.toFixed(8) + ' BTC';
-    document.getElementById('sv-txcount').textContent = d.n_tx.toLocaleString() + ' confirmed transactions';
-    refreshUsd();
-  } catch { document.getElementById('sv-bal').textContent = 'API unavailable'; }
-}
-
 function refreshUsd() {
-  if (btcPrice !== null && btcBalance !== null) {
-    const usd = (btcPrice * btcBalance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  if (btcPrice !== null) {
+    const usd = (btcPrice * SATOSHI_TOTAL_BTC).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('sv-usd').textContent = '$' + usd;
     const prizeEl = document.getElementById('explain-prize');
     if (prizeEl) prizeEl.textContent = `$${usd} USD`;
@@ -711,7 +703,6 @@ function refreshUsd() {
 }
 
 fetchPrice();
-fetchBalance();
 setInterval(fetchPrice, 10_000);
 
 // ─────────────────────────────────────────────────────────────
@@ -719,14 +710,26 @@ setInterval(fetchPrice, 10_000);
 // ─────────────────────────────────────────────────────────────
 let cracked = false;
 
-function onMatch(privHex, address) {
+function onMatch(privHex, address, walletBtc) {
   cracked = true;
   localStorage.setItem('CRACKED_PRIVKEY',   privHex);
   localStorage.setItem('CRACKED_ADDRESS',   address);
+  localStorage.setItem('CRACKED_WALLET_BTC', walletBtc ?? 50);
   localStorage.setItem('CRACKED_TIMESTAMP', new Date().toISOString());
 
   document.getElementById('m-privkey').textContent  = privHex;
   document.getElementById('m-address').textContent  = address;
+
+  const wBtc = walletBtc ?? 50;
+  document.getElementById('m-wallet-btc').textContent = `${wBtc.toFixed(8)} BTC`;
+
+  if (btcPrice !== null) {
+    const wUsd   = (btcPrice * wBtc).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const totUsd = (btcPrice * SATOSHI_TOTAL_BTC).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('m-wallet-usd').textContent = `$${wUsd} USD`;
+    document.getElementById('m-value').textContent      = `${SATOSHI_TOTAL_BTC.toLocaleString()} BTC  ≈  $${totUsd} USD`;
+  }
+
   document.getElementById('match-overlay').classList.add('show');
   document.getElementById('match-status').textContent = 'STATUS  ✓  *** MATCH FOUND ***';
   document.getElementById('match-status').style.color = '#ff0000';
@@ -734,7 +737,11 @@ function onMatch(privHex, address) {
 
 // Restore from previous session if we already cracked it
 const savedKey = localStorage.getItem('CRACKED_PRIVKEY');
-if (savedKey) onMatch(savedKey, localStorage.getItem('CRACKED_ADDRESS'));
+if (savedKey) onMatch(
+  savedKey,
+  localStorage.getItem('CRACKED_ADDRESS'),
+  parseFloat(localStorage.getItem('CRACKED_WALLET_BTC') ?? '50')
+);
 
 // ─────────────────────────────────────────────────────────────
 //  MAIN LOOP
@@ -757,11 +764,12 @@ function loop(now) {
 
   // ── Generate & test keys ──
   for (let i = 0; i < batchSize; i++) {
-    let privKey, address, privHex;
+    let privKey, h160hex, address, privHex;
     try {
       privKey  = secp.utils.randomPrivateKey();
-      address  = deriveAddress(privKey);
+      h160hex  = deriveHash160Uncompressed(privKey); // check against Patoshi set
       privHex  = toHex(privKey);
+      address  = deriveCompressedAddress(privKey);   // for display
     } catch {
       continue; // skip rare invalid key
     }
@@ -771,7 +779,8 @@ function loop(now) {
     lastPrivHex = privHex;
     lastAddr    = address;
 
-    if (address === TARGET) { onMatch(privHex, address); return; }
+    const hit = SATOSHI_HASH160.get(h160hex);
+    if (hit) { onMatch(privHex, hit[0], hit[1]); return; }
   }
 
   // ── Speed calculation (every 600ms) ──
@@ -820,15 +829,22 @@ window.showDemoMatch = function() {
     '0123456789abcdef'[Math.floor(Math.random() * 16)]
   ).join('');
 
-  document.getElementById('m-privkey').textContent = fakeKey;
-  document.getElementById('m-address').textContent = TARGET;
+  // Pick a random real Patoshi address for the preview
+  const entries = [...SATOSHI_HASH160.values()];
+  const [demoAddr, demoBtc] = entries[Math.floor(Math.random() * entries.length)];
 
-  const valEl = document.getElementById('m-value');
-  if (btcPrice !== null && btcBalance !== null) {
-    const usd = (btcPrice * btcBalance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    valEl.textContent = `${btcBalance.toFixed(8)} BTC  ≈  $${usd} USD`;
+  document.getElementById('m-privkey').textContent   = fakeKey;
+  document.getElementById('m-address').textContent   = demoAddr;
+  document.getElementById('m-wallet-btc').textContent = `${demoBtc.toFixed(8)} BTC`;
+
+  if (btcPrice !== null) {
+    const wUsd   = (btcPrice * demoBtc).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const totUsd = (btcPrice * SATOSHI_TOTAL_BTC).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('m-wallet-usd').textContent = `$${wUsd} USD`;
+    document.getElementById('m-value').textContent      = `${SATOSHI_TOTAL_BTC.toLocaleString()} BTC  ≈  $${totUsd} USD`;
   } else {
-    valEl.textContent = 'live price loading...';
+    document.getElementById('m-wallet-usd').textContent = 'live price loading...';
+    document.getElementById('m-value').textContent      = 'live price loading...';
   }
 
   document.getElementById('match-demo-tag').style.display  = 'block';
