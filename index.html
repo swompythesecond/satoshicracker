@@ -464,30 +464,45 @@
 
     <!-- Explanation -->
     <div class="t-sec explain-sec">
-      <div class="t-sec-label">WHO IS SATOSHI NAKAMOTO?</div>
+      <div class="t-sec-label" style="color:#ffcc00;font-size:12px">&#9733; &nbsp;YOU COULD GET RICH FROM THIS TAB RIGHT NOW&nbsp; &#9733;</div>
       <p class="explain-p">
-        Satoshi Nakamoto is the anonymous inventor of Bitcoin. Starting on <strong>January 3rd, 2009</strong>,
-        he mined thousands of early Bitcoin blocks using a distinctive mining pattern — now called the
-        <strong>Patoshi pattern</strong> — identified by researcher Sergio Lerner. These <strong>21,953 wallets</strong>
-        hold an estimated <strong>1,097,650 BTC</strong>. His true identity has never been revealed.
-        He disappeared from the internet in 2011. None of his coins have ever moved.
+        This is not a game and there is no catch. Every key this tool generates is a <strong>real cryptographic
+        attempt</strong> against real Bitcoin wallets holding real money. If this tool finds a match —
+        right now, on your screen — you walk away with a private key that unlocks one of Satoshi Nakamoto's
+        wallets. You import it into any Bitcoin wallet app and the coins are yours.
+        No middleman. No password reset. No authority to stop you.
+        The current prize is <strong style="color:#ffcc00"><span id="explain-prize">loading...</span></strong> — sitting untouched since 2009.
+      </p>
+
+      <div class="t-sec-label" style="margin-top:14px">WHY IT'S ACTUALLY POSSIBLE (NOT JUST A GIMMICK)</div>
+      <p class="explain-p">
+        Bitcoin private keys are just numbers. There is no registry, no owner field, no lock that knows
+        who it belongs to. <strong>Whoever holds the key controls the coins — period.</strong>
+        The security is purely statistical: the keyspace is 2<sup>256</sup> (~10<sup>77</sup>), so the odds
+        of any single attempt hitting are astronomically low. But the probability is <em>never exactly zero</em>.
+        Every attempt is an independent draw with a real, nonzero chance of winning.
+        By checking all <strong>21,953 known Satoshi wallets</strong> simultaneously, your effective target is
+        21,953× larger than checking a single address — still a lottery, but the biggest possible prize pool in existence.
+      </p>
+
+      <div class="t-sec-label" style="margin-top:14px">WHO IS SATOSHI NAKAMOTO?</div>
+      <p class="explain-p">
+        Satoshi Nakamoto is the anonymous inventor of Bitcoin. Between 2009 and 2010 he mined thousands of
+        early blocks using a distinctive pattern — now called the <strong>Patoshi pattern</strong> — identified
+        by researcher Sergio Lerner. Those blocks paid out ~50 BTC each into <strong>21,953 separate wallets</strong>,
+        totalling roughly <strong>1,097,650 BTC</strong>. Satoshi vanished from the internet in 2011.
+        His true identity has never been confirmed. <strong>Not a single satoshi has ever moved.</strong>
+        The coins have been sitting there, locked by math, for over 15 years.
       </p>
 
       <div class="t-sec-label" style="margin-top:14px">HOW THIS TOOL WORKS</div>
       <p class="explain-p">
         Every Bitcoin wallet is locked by a <strong>256-bit private key</strong> — a random number between 1 and
         2<sup>256</sup>. This tool generates real random private keys using the actual <strong>secp256k1 elliptic
-        curve</strong>, derives the uncompressed public key, computes its <strong>hash160</strong>
-        (SHA‑256 → RIPEMD‑160), and checks it against a preloaded set of all 21,953 known Patoshi wallet
-        fingerprints in O(1) time. No tricks, no simulation — real cryptography running in your browser.
-      </p>
-
-      <div class="t-sec-label" style="margin-top:14px">WHY IT'S THEORETICALLY POSSIBLE</div>
-      <p class="explain-p">
-        The probability is never exactly zero. Every key this tool generates has an identical, nonzero chance
-        of being correct — private keys have no ownership and no history. Bitcoin's security is purely
-        statistical. Checking <em>all</em> of Satoshi's wallets simultaneously multiplies your surface area
-        by 21,953×. The prize: <span id="explain-prize" style="color:#ffcc00">loading...</span>.
+        curve</strong> (the same algorithm Bitcoin itself uses), derives the public key, and checks whether it
+        matches any of the 21,953 Patoshi wallet fingerprints — all preloaded in memory for instant O(1) lookup.
+        No tricks, no simulation. Real cryptography running entirely in your browser.
+        A match means you found the key. The coins move when you say so.
       </p>
     </div>
 
