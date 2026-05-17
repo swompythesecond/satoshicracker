@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ── Primary SEO ── -->
+  <title>Satoshi Nakamoto Wallet Cracker — Try to Crack the Genesis Block Bitcoin Wallet</title>
+  <meta name="description" content="Try your luck cracking Satoshi Nakamoto's Bitcoin genesis block wallet (1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa). Real secp256k1 cryptography, live BTC price, real attempt counter. Theoretically possible — odds: 1 in 10⁶⁸.">
+  <meta name="keywords" content="satoshi nakamoto wallet, bitcoin genesis block, bitcoin brute force, crack bitcoin wallet, secp256k1, bitcoin private key, satoshi bitcoin address, 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa, bitcoin puzzle">
+  <meta name="author" content="Satoshi Wallet Cracker">
+  <meta name="robots" content="index, follow">
+
+  <!-- ── Open Graph / Facebook ── -->
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="Satoshi Nakamoto Wallet Cracker — Can You Find His Private Key?">
+  <meta property="og:description" content="Real secp256k1 brute-force against Satoshi's genesis block wallet. Live BTC balance and price. Odds: 1 in 10⁶⁸ — but not zero.">
+  <meta property="og:locale"      content="en_US">
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card"        content="summary">
+  <meta name="twitter:title"       content="Satoshi Nakamoto Wallet Cracker">
+  <meta name="twitter:description" content="Try to brute-force Satoshi's Bitcoin genesis wallet using real cryptography. Live BTC stats. Theoretically possible.">
+
+  <!-- ── Structured Data ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Satoshi Nakamoto Wallet Cracker",
+    "description": "A real secp256k1 brute-force tool targeting Satoshi Nakamoto's Bitcoin genesis block wallet. Generates genuine Bitcoin private keys, derives P2PKH addresses, and checks for a match in real time.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any (browser-based)",
+    "keywords": "satoshi nakamoto, bitcoin genesis block, bitcoin private key, secp256k1, brute force"
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      color: #00bb44;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.28;
+    }
+
+    /* CRT scanlines */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.10) 2px,
+        rgba(0,0,0,0.10) 4px
+      );
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    #app {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    #terminal {
+      width: 100%;
+      max-width: 920px;
+      background: rgba(0, 6, 0, 0.94);
+      border: 1px solid #004400;
+      box-shadow: 0 0 0 1px #001400, 0 0 50px rgba(0,255,68,0.06);
+      align-self: flex-start;
+    }
+
+    /* ── Header ── */
+    .t-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 16px;
+      border-bottom: 1px solid #002800;
+      background: rgba(0,15,0,0.6);
+    }
+    .t-title {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #00ff55;
+      text-shadow: 0 0 8px rgba(0,255,85,0.5);
+    }
+    .t-status-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot.loading { background: #ffaa00; box-shadow: 0 0 5px #ffaa00; animation: pulse 0.8s ease-in-out infinite; }
+    .dot.running { background: #00ff55; box-shadow: 0 0 5px #00ff55; animation: pulse 1.4s ease-in-out infinite; }
+    .dot.error   { background: #ff2222; box-shadow: 0 0 5px #ff2222; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.65)} }
+
+    /* ── Section ── */
+    .t-sec {
+      padding: 10px 16px;
+      border-bottom: 1px solid #001800;
+    }
+    .t-sec:last-child { border-bottom: none; }
+    .t-sec-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #004400;
+      margin-bottom: 8px;
+    }
+
+    /* ── Field rows ── */
+    .f-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .f-lbl { color: #005500; min-width: 88px; flex-shrink: 0; }
+    .f-val { color: #00bb44; word-break: break-all; }
+    .f-val.bright { color: #00ff88; }
+    .f-val.gold   { color: #ffcc00; }
+    .f-val.dim    { color: #006600; }
+    .f-val.muted  { color: #004400; font-style: italic; }
+
+    /* ── Key display ── */
+    .key-box {
+      font-size: 12px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      word-break: break-all;
+      letter-spacing: 0.5px;
+      border-left: 2px solid #003300;
+      background: rgba(0,30,0,0.3);
+      line-height: 1.6;
+    }
+    .key-box.privkey { color: #00ff88; border-left-color: #005500; }
+    .key-box.address { color: #009944; }
+
+    #match-status {
+      font-size: 11px;
+      color: #004400;
+      margin-top: 2px;
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 24px;
+    }
+    .s-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #001200;
+    }
+    .s-lbl { color: #005500; }
+    .s-val { color: #00cc44; }
+    .s-val.hi { color: #00ff88; }
+    .s-val.gold { color: #ffcc00; }
+
+    /* ── Progress ── */
+    .prog-track {
+      background: #000d00;
+      border: 1px solid #002800;
+      height: 3px;
+      margin: 10px 0 4px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: #00cc44;
+      box-shadow: 0 0 4px #00cc44;
+      width: 0%;
+    }
+    #prog-label {
+      font-size: 10px;
+      color: #005500;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* ── Log ── */
+    #log-wrap {
+      max-height: 130px;
+      overflow-y: auto;
+    }
+    .log-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 16px;
+      gap: 8px;
+      font-size: 10px;
+      padding: 2px 0;
+      border-bottom: 1px solid #001000;
+      align-items: center;
+      color: #004a00;
+    }
+    .log-n { color: #003300; }
+    .log-addr { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .log-x { color: #005500; text-align: right; }
+
+    /* ── Loading overlay ── */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: #000;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .lo-main { color: #00cc44; font-size: 13px; letter-spacing: 2px; }
+    .lo-sub  { color: #005500; font-size: 11px; letter-spacing: 1px; }
+
+    /* ── Match overlay ── */
+    #match-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.97);
+      z-index: 400;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    #match-overlay.show { display: flex; }
+    .match-title {
+      font-size: 36px;
+      color: #ff0000;
+      text-shadow: 0 0 30px #ff0000;
+      text-align: center;
+      margin-bottom: 24px;
+      animation: mflash .5s step-end infinite;
+    }
+    @keyframes mflash { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .match-panel {
+      border: 1px solid #ff0000;
+      padding: 20px;
+      max-width: 820px;
+      width: 100%;
+      background: #030000;
+    }
+    .match-lbl { font-size: 9px; color: #880000; letter-spacing: 2px; margin: 12px 0 4px; }
+    .match-val {
+      font-size: 13px;
+      color: #ff4444;
+      word-break: break-all;
+      padding: 8px;
+      background: #080000;
+      border: 1px solid #330000;
+    }
+    .match-note { font-size: 11px; color: #882222; margin-top: 14px; line-height: 2; }
+    .match-close {
+      margin-top: 18px;
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid #440000;
+      color: #882222;
+      padding: 7px 24px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+    .match-close:hover { border-color: #880000; color: #cc4444; }
+    .match-demo-tag {
+      font-size: 9px;
+      color: #550000;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    /* ── Demo button ── */
+    #demo-btn {
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid #003300;
+      color: #005500;
+      padding: 5px 14px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #demo-btn:hover { border-color: #006600; color: #009900; }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #004400; }
+
+    sup { font-size: 8px; vertical-align: super; }
+
+    /* ── Explanation section ── */
+    .explain-sec { background: rgba(0,10,0,0.4); }
+    .explain-p {
+      font-size: 11px;
+      color: #006633;
+      line-height: 1.9;
+      max-width: 820px;
+    }
+    .explain-p strong { color: #00994d; }
+    .explain-p sup { color: inherit; }
+  </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="lo-main">INITIALIZING CRYPTOGRAPHIC ENGINE</div>
+  <div class="lo-sub">loading secp256k1 elliptic curve library...</div>
+  <div class="lo-sub" id="lo-detail" style="color:#003300"></div>
+</div>
+
+<div id="match-overlay">
+  <div id="match-demo-tag" class="match-demo-tag" style="display:none">[ PREVIEW MODE — NOT A REAL CRACK ]</div>
+  <div class="match-title">!! PRIVATE KEY FOUND !!</div>
+  <div class="match-panel">
+    <div class="match-lbl">PRIVATE KEY — IMPORT INTO ELECTRUM / BITCOIN CORE / ANY BTC WALLET</div>
+    <div class="match-val" id="m-privkey"></div>
+    <div class="match-lbl">CONFIRMED ADDRESS</div>
+    <div class="match-val" id="m-address"></div>
+    <div class="match-lbl">WALLET VALUE</div>
+    <div class="match-val" id="m-value" style="color:#ffcc00">calculating...</div>
+    <div class="match-note">
+      ▸ This key has been saved to localStorage (will survive page refresh)<br>
+      ▸ Import private key into Electrum: Wallet → Private Keys → Import<br>
+      ▸ Send funds immediately — anyone who generates the same key can claim them
+    </div>
+  </div>
+  <button class="match-close" id="match-close-btn" style="display:none" onclick="closeDemoMatch()">[ CLOSE PREVIEW ]</button>
+</div>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+  <div id="terminal">
+
+    <div class="t-header">
+      <div>
+        <div class="t-title"><span style="color:#f7931a">₿</span> &nbsp;SATOSHI NAKAMOTO WALLET CRACKER &nbsp;—&nbsp; secp256k1 / P2PKH</div>
+        <div style="font-size:9px;color:#004400;letter-spacing:1px;margin-top:3px">Genesis Block · Block #0 · Jan 3 2009 · Real cryptography · No simulation</div>
+      </div>
+      <div class="t-status-area">
+        <button id="demo-btn" onclick="showDemoMatch()">PREVIEW MATCH SCREEN</button>
+        <div class="dot loading" id="status-dot"></div>
+        <span id="status-txt" style="color:#665500">LOADING</span>
+      </div>
+    </div>
+
+    <!-- Target -->
+    <div class="t-sec">
+      <div class="t-sec-label">TARGET — SATOSHI NAKAMOTO'S GENESIS WALLET</div>
+      <div class="f-row">
+        <span class="f-lbl">ADDRESS</span>
+        <span class="f-val bright">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</span>
+      </div>
+      <div class="f-row" style="margin-bottom:2px">
+        <span class="f-lbl">ORIGIN</span>
+        <span class="f-val dim">Block #0 (Genesis Block) — mined by Satoshi Nakamoto on January 3, 2009</span>
+      </div>
+      <div class="f-row">
+        <span class="f-lbl">BTC BALANCE</span>
+        <span class="f-val gold" id="sv-bal"><span class="muted">querying blockchain.info...</span></span>
+      </div>
+      <div class="f-row">
+        <span class="f-lbl">USD VALUE</span>
+        <span class="f-val gold" id="sv-usd"><span class="muted">calculating...</span></span>
+      </div>
+      <div class="f-row">
+        <span class="f-lbl">BTC PRICE</span>
+        <span class="f-val" id="sv-price"><span class="muted">querying Binance...</span></span>
+        <span style="font-size:10px;color:#004400;margin-left:6px">live · updates every 10s</span>
+      </div>
+      <div class="f-row">
+        <span class="f-lbl">TX COUNT</span>
+        <span class="f-val dim" id="sv-txcount"><span class="muted">...</span></span>
+      </div>
+    </div>
+
+    <!-- Current key -->
+    <div class="t-sec">
+      <div class="t-sec-label">CURRENT KEY UNDER TEST</div>
+      <div style="font-size:9px;color:#004400;margin-bottom:4px;letter-spacing:1px">PRIVATE KEY (256-bit hex)</div>
+      <div class="key-box privkey" id="cur-priv">waiting for engine...</div>
+      <div style="font-size:9px;color:#004400;margin-bottom:4px;letter-spacing:1px">DERIVED P2PKH ADDRESS</div>
+      <div class="key-box address" id="cur-addr">—</div>
+      <div id="match-status">STATUS &nbsp; ✗ &nbsp; NO MATCH</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="t-sec">
+      <div class="t-sec-label">RUNTIME STATISTICS</div>
+      <div class="stats-grid">
+        <div class="s-item">
+          <span class="s-lbl">TOTAL ATTEMPTS</span>
+          <span class="s-val hi" id="sv-attempts">0</span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">SPEED</span>
+          <span class="s-val hi" id="sv-speed">— keys/sec</span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">ELAPSED</span>
+          <span class="s-val" id="sv-elapsed">00:00:00</span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">KEYSPACE</span>
+          <span class="s-val">2<sup>256</sup> &asymp; 1.16&times;10<sup>77</sup></span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">PROGRESS</span>
+          <span class="s-val" id="sv-progress">~0%</span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">ETA</span>
+          <span class="s-val">&#8734; (longer than universe age)</span>
+        </div>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <div id="prog-label">PROGRESS: &lt; 10<sup>-74</sup> %</div>
+    </div>
+
+    <!-- Log -->
+    <div class="t-sec">
+      <div class="t-sec-label">ATTEMPT LOG</div>
+      <div id="log-wrap">
+        <div style="color:#003300;font-size:10px">engine starting...</div>
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div class="t-sec explain-sec">
+      <div class="t-sec-label">WHO IS SATOSHI NAKAMOTO?</div>
+      <p class="explain-p">
+        Satoshi Nakamoto is the anonymous inventor of Bitcoin. On <strong>January 3rd, 2009</strong>, he mined
+        the very first Bitcoin block — the <strong>Genesis Block</strong> — and received the 50 BTC reward to the
+        address above. His true identity has never been revealed. He disappeared from the internet in 2011.
+        His wallets, spread across thousands of addresses, are estimated to hold over <strong>1,000,000 BTC</strong>.
+        None have ever moved.
+      </p>
+
+      <div class="t-sec-label" style="margin-top:14px">HOW THIS TOOL WORKS</div>
+      <p class="explain-p">
+        Every Bitcoin wallet is locked by a <strong>256-bit private key</strong> — a random number between 1 and
+        2<sup>256</sup>. This tool generates real random private keys using the actual <strong>secp256k1 elliptic
+        curve</strong> (the same algorithm Bitcoin uses), derives the corresponding wallet address via
+        SHA‑256 → RIPEMD‑160 → Base58Check encoding, and checks whether it matches Satoshi's address.
+        No tricks, no simulation — real cryptography running in your browser.
+      </p>
+
+      <div class="t-sec-label" style="margin-top:14px">WHY IT'S THEORETICALLY POSSIBLE</div>
+      <p class="explain-p">
+        The probability is never exactly zero. Every key this tool generates has an identical, nonzero chance
+        of being correct — private keys have no ownership and no history. Bitcoin's security is purely
+        statistical. You could, in principle, find the key on your very next attempt. That's what makes
+        this interesting: it costs nothing to try, and the prize is <span id="explain-prize" style="color:#ffcc00">loading...</span>.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+// ─────────────────────────────────────────────────────────────
+//  LOAD CRYPTO LIBS
+// ─────────────────────────────────────────────────────────────
+let secp, sha256, ripemd160;
+
+try {
+  document.getElementById('lo-detail').textContent = 'contacting esm.sh CDN...';
+
+  const [s, h, r] = await Promise.all([
+    import('https://esm.sh/@noble/secp256k1@2.1.0'),
+    import('https://esm.sh/@noble/hashes@1.5.0/sha256'),
+    import('https://esm.sh/@noble/hashes@1.5.0/ripemd160'),
+  ]);
+
+  secp      = s;
+  sha256    = h.sha256;
+  ripemd160 = r.ripemd160;
+
+  document.getElementById('lo-detail').textContent = 'secp256k1 ready';
+} catch (err) {
+  document.getElementById('loading-overlay').innerHTML = `
+    <div style="color:#ff2222;font-size:13px;letter-spacing:2px">CRYPTO ENGINE FAILED TO LOAD</div>
+    <div style="color:#882222;font-size:11px;margin-top:10px">${err.message}</div>
+    <div style="color:#440000;font-size:11px;margin-top:6px">Requires internet access (esm.sh CDN)</div>
+  `;
+  throw err;
+}
+
+document.getElementById('loading-overlay').style.display = 'none';
+document.getElementById('status-dot').className = 'dot running';
+document.getElementById('status-txt').textContent = 'RUNNING';
+document.getElementById('status-txt').style.color = '#00aa33';
+
+// ─────────────────────────────────────────────────────────────
+//  BITCOIN ADDRESS DERIVATION
+// ─────────────────────────────────────────────────────────────
+const TARGET = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+const B58_ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+function base58Encode(bytes) {
+  let leading = 0;
+  for (const b of bytes) { if (b !== 0) break; leading++; }
+
+  let n = 0n;
+  for (const b of bytes) n = n * 256n + BigInt(b);
+
+  let out = '';
+  while (n > 0n) { out = B58_ALPHA[Number(n % 58n)] + out; n /= 58n; }
+
+  return '1'.repeat(leading) + out;
+}
+
+// Hex lookup table for speed
+const HEX = Array.from({length: 256}, (_, i) => i.toString(16).padStart(2, '0'));
+function toHex(u8) {
+  let s = '';
+  for (let i = 0; i < u8.length; i++) s += HEX[u8[i]];
+  return s;
+}
+
+function deriveAddress(privKeyBytes) {
+  const pub      = secp.getPublicKey(privKeyBytes, true);   // 33 bytes compressed
+  const sha256p  = sha256(pub);                             // SHA256(pubkey)
+  const hash160  = ripemd160(sha256p);                      // RIPEMD160(sha256)
+
+  const versioned = new Uint8Array(21);
+  versioned[0] = 0x00;                                      // mainnet P2PKH
+  versioned.set(hash160, 1);
+
+  const checksum = sha256(sha256(versioned)).subarray(0, 4);
+
+  const full = new Uint8Array(25);
+  full.set(versioned);
+  full.set(checksum, 21);
+
+  return base58Encode(full);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  MATRIX RAIN BACKGROUND
+// ─────────────────────────────────────────────────────────────
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+const RCHARS = '0123456789ABCDEF';
+const COL_W  = 20;
+let cols, drops;
+
+function initCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  cols  = Math.ceil(canvas.width / COL_W);
+  drops = Array.from({length: cols}, () => Math.random() * -(canvas.height / COL_W));
+}
+
+function drawRain() {
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = '13px Share Tech Mono, monospace';
+
+  for (let i = 0; i < cols; i++) {
+    const y  = drops[i] * COL_W;
+    const ch = RCHARS[Math.floor(Math.random() * RCHARS.length)];
+
+    ctx.shadowBlur  = 8;
+    ctx.shadowColor = '#00ff44';
+    ctx.fillStyle   = '#00ff88';
+    ctx.fillText(ch, i * COL_W, y);
+    ctx.shadowBlur  = 0;
+
+    if (drops[i] > 1) {
+      ctx.fillStyle = '#004400';
+      ctx.fillText(RCHARS[Math.floor(Math.random() * RCHARS.length)], i * COL_W, y - COL_W);
+    }
+
+    drops[i]++;
+    if (y > canvas.height + 80 && Math.random() > 0.975) drops[i] = Math.floor(Math.random() * -30);
+  }
+}
+
+initCanvas();
+window.addEventListener('resize', initCanvas);
+
+// ─────────────────────────────────────────────────────────────
+//  STATS
+// ─────────────────────────────────────────────────────────────
+let totalAttempts = 0;
+const startTs     = Date.now();
+let speedSample   = 0;       // attempts since last speed calc
+let lastSpeedTs   = Date.now();
+let currentSpeed  = 0;
+
+function fmtElapsed() {
+  const s = Math.floor((Date.now() - startTs) / 1000);
+  return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60]
+    .map(v => String(v).padStart(2, '0')).join(':');
+}
+
+// progress% = n / 2^256 * 100
+// log10(progress%) = log10(n) + 2 - 256*log10(2)
+//                  = log10(n) - 75.0626...
+const LOG10_KEYSPACE = 256 * Math.log10(2) - 2; // 75.0626...
+
+function fmtProgress(n) {
+  if (n <= 0) return '< 10^-74 %';
+  const log10pct = Math.log10(n) - LOG10_KEYSPACE;
+  if (log10pct >= 0) return '≥ 1%';
+  const exp      = Math.floor(log10pct);
+  const mantissa = Math.pow(10, log10pct - exp).toFixed(4);
+  return `${mantissa} × 10^(${exp}) %`;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  ATTEMPT LOG
+// ─────────────────────────────────────────────────────────────
+const LOG_MAX = 10;
+let log = []; // [{n, addr}]
+
+function pushLog(n, addr) {
+  log.unshift({n, addr});
+  if (log.length > LOG_MAX) log.pop();
+}
+
+function renderLog() {
+  const el = document.getElementById('log-wrap');
+  if (!log.length) return;
+  el.innerHTML = log.map(e =>
+    `<div class="log-row">
+       <span class="log-n">#${e.n.toLocaleString()}</span>
+       <span class="log-addr">${e.addr}</span>
+       <span class="log-x">✗</span>
+     </div>`
+  ).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  LIVE BTC DATA
+// ─────────────────────────────────────────────────────────────
+let btcPrice = null, btcBalance = null;
+
+async function fetchPrice() {
+  try {
+    const d = await (await fetch('https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT')).json();
+    btcPrice = parseFloat(d.price);
+    document.getElementById('sv-price').textContent =
+      '$' + btcPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    refreshUsd();
+  } catch { document.getElementById('sv-price').textContent = 'API unavailable'; }
+}
+
+async function fetchBalance() {
+  try {
+    const d = await (await fetch(
+      'https://blockchain.info/rawaddr/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?cors=true&limit=0'
+    )).json();
+    btcBalance = d.final_balance / 1e8;
+    document.getElementById('sv-bal').textContent     = btcBalance.toFixed(8) + ' BTC';
+    document.getElementById('sv-txcount').textContent = d.n_tx.toLocaleString() + ' confirmed transactions';
+    refreshUsd();
+  } catch { document.getElementById('sv-bal').textContent = 'API unavailable'; }
+}
+
+function refreshUsd() {
+  if (btcPrice !== null && btcBalance !== null) {
+    const usd = (btcPrice * btcBalance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('sv-usd').textContent = '$' + usd;
+    const prizeEl = document.getElementById('explain-prize');
+    if (prizeEl) prizeEl.textContent = `$${usd} USD`;
+  }
+}
+
+fetchPrice();
+fetchBalance();
+setInterval(fetchPrice, 10_000);
+
+// ─────────────────────────────────────────────────────────────
+//  MATCH HANDLER
+// ─────────────────────────────────────────────────────────────
+let cracked = false;
+
+function onMatch(privHex, address) {
+  cracked = true;
+  localStorage.setItem('CRACKED_PRIVKEY',   privHex);
+  localStorage.setItem('CRACKED_ADDRESS',   address);
+  localStorage.setItem('CRACKED_TIMESTAMP', new Date().toISOString());
+
+  document.getElementById('m-privkey').textContent  = privHex;
+  document.getElementById('m-address').textContent  = address;
+  document.getElementById('match-overlay').classList.add('show');
+  document.getElementById('match-status').textContent = 'STATUS  ✓  *** MATCH FOUND ***';
+  document.getElementById('match-status').style.color = '#ff0000';
+}
+
+// Restore from previous session if we already cracked it
+const savedKey = localStorage.getItem('CRACKED_PRIVKEY');
+if (savedKey) onMatch(savedKey, localStorage.getItem('CRACKED_ADDRESS'));
+
+// ─────────────────────────────────────────────────────────────
+//  MAIN LOOP
+// ─────────────────────────────────────────────────────────────
+let batchSize    = 3;    // adaptive, targeting ~14ms/frame
+let lastFrameTs  = performance.now();
+let logTick      = 0;
+let lastPrivHex  = '';
+let lastAddr     = '';
+
+function loop(now) {
+  if (cracked) return;
+
+  const dt = Math.min(now - lastFrameTs, 100);
+  lastFrameTs = now;
+
+  // Adaptive batch: grow if frame fast, shrink if slow
+  if (dt < 11 && batchSize < 25) batchSize++;
+  else if (dt > 20 && batchSize > 1) batchSize--;
+
+  // ── Generate & test keys ──
+  for (let i = 0; i < batchSize; i++) {
+    let privKey, address, privHex;
+    try {
+      privKey  = secp.utils.randomPrivateKey();
+      address  = deriveAddress(privKey);
+      privHex  = toHex(privKey);
+    } catch {
+      continue; // skip rare invalid key
+    }
+
+    totalAttempts++;
+    speedSample++;
+    lastPrivHex = privHex;
+    lastAddr    = address;
+
+    if (address === TARGET) { onMatch(privHex, address); return; }
+  }
+
+  // ── Speed calculation (every 600ms) ──
+  const now2 = Date.now();
+  if (now2 - lastSpeedTs >= 600) {
+    currentSpeed    = Math.round(speedSample / ((now2 - lastSpeedTs) / 1000));
+    speedSample     = 0;
+    lastSpeedTs     = now2;
+  }
+
+  // ── Draw background ──
+  drawRain();
+
+  // ── Update DOM ──
+  if (lastPrivHex) {
+    document.getElementById('cur-priv').textContent = lastPrivHex;
+    document.getElementById('cur-addr').textContent = lastAddr;
+  }
+
+  document.getElementById('sv-attempts').textContent = totalAttempts.toLocaleString();
+  document.getElementById('sv-speed').textContent    = currentSpeed > 0
+    ? currentSpeed.toLocaleString() + ' keys/sec' : 'measuring...';
+  document.getElementById('sv-elapsed').textContent  = fmtElapsed();
+
+  const pct = fmtProgress(totalAttempts);
+  document.getElementById('sv-progress').textContent = pct;
+  document.getElementById('prog-label').textContent  = 'PROGRESS: ' + pct;
+
+  // ── Update log every ~15 frames ──
+  if (++logTick >= 15 && lastAddr) {
+    logTick = 0;
+    pushLog(totalAttempts, lastAddr);
+    renderLog();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+
+// ─────────────────────────────────────────────────────────────
+//  DEMO MATCH PREVIEW  (exposed to window for onclick)
+// ─────────────────────────────────────────────────────────────
+window.showDemoMatch = function() {
+  const fakeKey = Array.from({length: 64}, () =>
+    '0123456789abcdef'[Math.floor(Math.random() * 16)]
+  ).join('');
+
+  document.getElementById('m-privkey').textContent = fakeKey;
+  document.getElementById('m-address').textContent = TARGET;
+
+  const valEl = document.getElementById('m-value');
+  if (btcPrice !== null && btcBalance !== null) {
+    const usd = (btcPrice * btcBalance).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    valEl.textContent = `${btcBalance.toFixed(8)} BTC  ≈  $${usd} USD`;
+  } else {
+    valEl.textContent = 'live price loading...';
+  }
+
+  document.getElementById('match-demo-tag').style.display  = 'block';
+  document.getElementById('match-close-btn').style.display = 'inline-block';
+  document.getElementById('match-overlay').classList.add('show');
+};
+
+window.closeDemoMatch = function() {
+  document.getElementById('match-overlay').classList.remove('show');
+};
+</script>
+</body>
+</html>
