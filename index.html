@@ -35,6 +35,15 @@
   }
   </script>
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4M79EGG46"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-G4M79EGG46');
+  </script>
+
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <script src="satoshi_data.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -337,8 +346,8 @@
 
 <div id="loading-overlay">
   <div class="lo-main">INITIALIZING CRYPTOGRAPHIC ENGINE</div>
-  <div class="lo-sub">loading secp256k1 elliptic curve library...</div>
-  <div class="lo-sub" id="lo-detail" style="color:#003300"></div>
+  <div class="lo-sub" id="lo-detail">spawning worker threads...</div>
+  <div class="lo-sub" id="lo-detail2" style="color:#003300"></div>
 </div>
 
 <div id="match-overlay">
@@ -449,6 +458,14 @@
           <span class="s-lbl">ETA</span>
           <span class="s-val">&#8734; (longer than universe age)</span>
         </div>
+        <div class="s-item">
+          <span class="s-lbl">THREADS</span>
+          <span class="s-val hi" id="sv-threads">—</span>
+        </div>
+        <div class="s-item">
+          <span class="s-lbl">GPU</span>
+          <span class="s-val dim">N/A (browser)</span>
+        </div>
       </div>
       <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
       <div id="prog-label">PROGRESS: &lt; 10<sup>-74</sup> %</div>
@@ -521,81 +538,62 @@
 
 <script type="module">
 // ─────────────────────────────────────────────────────────────
-//  LOAD CRYPTO LIBS
+//  WORKER SOURCE — inlined so it works from file:// via blob URL
 // ─────────────────────────────────────────────────────────────
-let secp, sha256, ripemd160;
+const WORKER_SRC = `
+import { getPublicKey, utils } from 'https://esm.sh/@noble/secp256k1@2.1.0';
+import { sha256 }    from 'https://esm.sh/@noble/hashes@1.5.0/sha256';
+import { ripemd160 } from 'https://esm.sh/@noble/hashes@1.5.0/ripemd160';
 
-try {
-  document.getElementById('lo-detail').textContent = 'contacting esm.sh CDN...';
-
-  const [s, h, r] = await Promise.all([
-    import('https://esm.sh/@noble/secp256k1@2.1.0'),
-    import('https://esm.sh/@noble/hashes@1.5.0/sha256'),
-    import('https://esm.sh/@noble/hashes@1.5.0/ripemd160'),
-  ]);
-
-  secp      = s;
-  sha256    = h.sha256;
-  ripemd160 = r.ripemd160;
-
-  document.getElementById('lo-detail').textContent = 'secp256k1 ready';
-} catch (err) {
-  document.getElementById('loading-overlay').innerHTML = `
-    <div style="color:#ff2222;font-size:13px;letter-spacing:2px">CRYPTO ENGINE FAILED TO LOAD</div>
-    <div style="color:#882222;font-size:11px;margin-top:10px">${err.message}</div>
-    <div style="color:#440000;font-size:11px;margin-top:6px">Requires internet access (esm.sh CDN)</div>
-  `;
-  throw err;
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const HEX = Array.from({length:256},(_,i)=>i.toString(16).padStart(2,'0'));
+function toHex(u8){let s='';for(let i=0;i<u8.length;i++)s+=HEX[u8[i]];return s;}
+function base58Encode(b){
+  let lead=0;for(const x of b){if(x!==0)break;lead++;}
+  let n=0n;for(const x of b)n=n*256n+BigInt(x);
+  let out='';while(n>0n){out=B58[Number(n%58n)]+out;n/=58n;}
+  return '1'.repeat(lead)+out;
+}
+function hash160Hex(privKey){
+  const pub=getPublicKey(privKey,false);
+  return toHex(ripemd160(sha256(pub)));
+}
+function compressedAddress(privKey){
+  const pub=getPublicKey(privKey,true);
+  const h160=ripemd160(sha256(pub));
+  const v=new Uint8Array(21);v[0]=0;v.set(h160,1);
+  const cs=sha256(sha256(v)).subarray(0,4);
+  const f=new Uint8Array(25);f.set(v);f.set(cs,21);
+  return base58Encode(f);
 }
 
-document.getElementById('loading-overlay').style.display = 'none';
-document.getElementById('status-dot').className = 'dot running';
-document.getElementById('status-txt').textContent = 'RUNNING';
-document.getElementById('status-txt').style.color = '#00aa33';
-
-// ─────────────────────────────────────────────────────────────
-//  BITCOIN ADDRESS DERIVATION
-// ─────────────────────────────────────────────────────────────
-const B58_ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
-function base58Encode(bytes) {
-  let leading = 0;
-  for (const b of bytes) { if (b !== 0) break; leading++; }
-  let n = 0n;
-  for (const b of bytes) n = n * 256n + BigInt(b);
-  let out = '';
-  while (n > 0n) { out = B58_ALPHA[Number(n % 58n)] + out; n /= 58n; }
-  return '1'.repeat(leading) + out;
-}
-
-// Hex lookup table for speed
-const HEX = Array.from({length: 256}, (_, i) => i.toString(16).padStart(2, '0'));
-function toHex(u8) {
-  let s = '';
-  for (let i = 0; i < u8.length; i++) s += HEX[u8[i]];
-  return s;
-}
-
-// Returns the P2PKH address for a compressed pubkey (for display only)
-function deriveCompressedAddress(privKeyBytes) {
-  const pub      = secp.getPublicKey(privKeyBytes, true);
-  const h160     = ripemd160(sha256(pub));
-  const versioned = new Uint8Array(21);
-  versioned[0] = 0x00;
-  versioned.set(h160, 1);
-  const checksum = sha256(sha256(versioned)).subarray(0, 4);
-  const full = new Uint8Array(25);
-  full.set(versioned);
-  full.set(checksum, 21);
-  return base58Encode(full);
-}
-
-// Returns hash160 hex of the UNCOMPRESSED pubkey — what we check against the Patoshi set
-function deriveHash160Uncompressed(privKeyBytes) {
-  const pub  = secp.getPublicKey(privKeyBytes, false); // 65 bytes uncompressed
-  const h160 = ripemd160(sha256(pub));
-  return toHex(h160);
-}
+const BATCH=150, REPORT_MS=350;
+self.onmessage=function({data}){
+  if(data.type!=='init')return;
+  const map=new Map(data.entries);
+  let count=0,lastPrivHex='',lastAddr='',lastReport=Date.now(),disp=0;
+  for(;;){
+    for(let i=0;i<BATCH;i++){
+      const pk=utils.randomPrivateKey();
+      const h=hash160Hex(pk);
+      count++;
+      const hit=map.get(h);
+      if(hit){
+        const privHex=toHex(pk);
+        let address='';try{address=compressedAddress(pk);}catch{}
+        self.postMessage({type:'match',privHex,address,walletBtc:hit[1]});
+        return;
+      }
+      if(++disp>=150){disp=0;lastPrivHex=toHex(pk);try{lastAddr=compressedAddress(pk);}catch{}}
+    }
+    const now=Date.now();
+    if(now-lastReport>=REPORT_MS){
+      self.postMessage({type:'stats',count,lastPrivHex,lastAddr});
+      count=0;lastReport=now;
+    }
+  }
+};
+`;
 
 // ─────────────────────────────────────────────────────────────
 //  MATRIX RAIN BACKGROUND
@@ -617,22 +615,18 @@ function drawRain() {
   ctx.fillStyle = 'rgba(0,0,0,0.06)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.font = '13px Share Tech Mono, monospace';
-
   for (let i = 0; i < cols; i++) {
     const y  = drops[i] * COL_W;
     const ch = RCHARS[Math.floor(Math.random() * RCHARS.length)];
-
     ctx.shadowBlur  = 8;
     ctx.shadowColor = '#00ff44';
     ctx.fillStyle   = '#00ff88';
     ctx.fillText(ch, i * COL_W, y);
     ctx.shadowBlur  = 0;
-
     if (drops[i] > 1) {
       ctx.fillStyle = '#004400';
       ctx.fillText(RCHARS[Math.floor(Math.random() * RCHARS.length)], i * COL_W, y - COL_W);
     }
-
     drops[i]++;
     if (y > canvas.height + 80 && Math.random() > 0.975) drops[i] = Math.floor(Math.random() * -30);
   }
@@ -646,7 +640,7 @@ window.addEventListener('resize', initCanvas);
 // ─────────────────────────────────────────────────────────────
 let totalAttempts = 0;
 const startTs     = Date.now();
-let speedSample   = 0;       // attempts since last speed calc
+let speedSample   = 0;
 let lastSpeedTs   = Date.now();
 let currentSpeed  = 0;
 
@@ -656,10 +650,7 @@ function fmtElapsed() {
     .map(v => String(v).padStart(2, '0')).join(':');
 }
 
-// progress% = n / 2^256 * 100
-// log10(progress%) = log10(n) + 2 - 256*log10(2)
-//                  = log10(n) - 75.0626...
-const LOG10_KEYSPACE = 256 * Math.log10(2) - 2; // 75.0626...
+const LOG10_KEYSPACE = 256 * Math.log10(2) - 2;
 
 function fmtProgress(n) {
   if (n <= 0) return '< 10^-74 %';
@@ -674,7 +665,7 @@ function fmtProgress(n) {
 //  ATTEMPT LOG
 // ─────────────────────────────────────────────────────────────
 const LOG_MAX = 10;
-let log = []; // [{n, addr}]
+let log = [];
 
 function pushLog(n, addr) {
   log.unshift({n, addr});
@@ -727,13 +718,15 @@ let cracked = false;
 
 function onMatch(privHex, address, walletBtc) {
   cracked = true;
-  localStorage.setItem('CRACKED_PRIVKEY',   privHex);
-  localStorage.setItem('CRACKED_ADDRESS',   address);
-  localStorage.setItem('CRACKED_WALLET_BTC', walletBtc ?? 50);
-  localStorage.setItem('CRACKED_TIMESTAMP', new Date().toISOString());
+  workers.forEach(w => { try { w.terminate(); } catch {} });
 
-  document.getElementById('m-privkey').textContent  = privHex;
-  document.getElementById('m-address').textContent  = address;
+  localStorage.setItem('CRACKED_PRIVKEY',    privHex);
+  localStorage.setItem('CRACKED_ADDRESS',    address);
+  localStorage.setItem('CRACKED_WALLET_BTC', walletBtc ?? 50);
+  localStorage.setItem('CRACKED_TIMESTAMP',  new Date().toISOString());
+
+  document.getElementById('m-privkey').textContent = privHex;
+  document.getElementById('m-address').textContent = address;
 
   const wBtc = walletBtc ?? 50;
   document.getElementById('m-wallet-btc').textContent = `${wBtc.toFixed(8)} BTC`;
@@ -750,7 +743,145 @@ function onMatch(privHex, address, walletBtc) {
   document.getElementById('match-status').style.color = '#ff0000';
 }
 
-// Restore from previous session if we already cracked it
+// ─────────────────────────────────────────────────────────────
+//  WORKER POOL — blob URL works from file:// and http:// alike
+// ─────────────────────────────────────────────────────────────
+const WORKER_COUNT   = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, 16));
+const workers        = [];
+const satoshiEntries = [...SATOSHI_HASH160.entries()];
+let lastDisplayPriv  = '';
+let lastDisplayAddr  = '';
+
+function attachWorkerHandlers(w) {
+  w.onmessage = function({ data }) {
+    if (data.type === 'stats') {
+      totalAttempts += data.count;
+      speedSample   += data.count;
+      if (data.lastPrivHex) lastDisplayPriv = data.lastPrivHex;
+      if (data.lastAddr)    lastDisplayAddr = data.lastAddr;
+    } else if (data.type === 'match') {
+      if (!cracked) onMatch(data.privHex, data.address, data.walletBtc);
+    }
+  };
+}
+
+function setStatus(label) {
+  document.getElementById('sv-threads').textContent = label;
+  document.getElementById('loading-overlay').style.display = 'none';
+  document.getElementById('status-dot').className   = 'dot running';
+  document.getElementById('status-txt').textContent = 'RUNNING';
+  document.getElementById('status-txt').style.color = '#00aa33';
+}
+
+let workersFailed = false;
+try {
+  const blob      = new Blob([WORKER_SRC], { type: 'text/javascript' });
+  const blobUrl   = URL.createObjectURL(blob);
+
+  for (let i = 0; i < WORKER_COUNT; i++) {
+    const w = new Worker(blobUrl, { type: 'module' });
+    attachWorkerHandlers(w);
+    // If any worker errors immediately (e.g. module blob not supported),
+    // tear down and fall through to the single-threaded path.
+    w.onerror = function() {
+      if (workersFailed) return;
+      workersFailed = true;
+      workers.forEach(x => { try { x.terminate(); } catch {} });
+      workers.length = 0;
+      startFallback();
+    };
+    w.postMessage({ type: 'init', entries: satoshiEntries });
+    workers.push(w);
+  }
+
+  setStatus(WORKER_COUNT + ' CPU thread' + (WORKER_COUNT > 1 ? 's' : ''));
+} catch (e) {
+  workersFailed = true;
+  startFallback();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  SINGLE-THREADED FALLBACK (file:// + old browsers)
+// ─────────────────────────────────────────────────────────────
+async function startFallback() {
+  setStatus('1 thread (fallback)');
+  document.getElementById('lo-detail').textContent  = 'loading secp256k1...';
+  document.getElementById('loading-overlay').style.display = 'flex';
+
+  let secp, sha256f, ripemd160f;
+  try {
+    const [s, h, r] = await Promise.all([
+      import('https://esm.sh/@noble/secp256k1@2.1.0'),
+      import('https://esm.sh/@noble/hashes@1.5.0/sha256'),
+      import('https://esm.sh/@noble/hashes@1.5.0/ripemd160'),
+    ]);
+    secp      = s;
+    sha256f   = h.sha256;
+    ripemd160f = r.ripemd160;
+  } catch(err) {
+    document.getElementById('loading-overlay').innerHTML =
+      `<div style="color:#ff2222;font-size:13px;letter-spacing:2px">ENGINE FAILED</div>
+       <div style="color:#882222;font-size:11px;margin-top:8px">${err.message}</div>`;
+    return;
+  }
+
+  document.getElementById('loading-overlay').style.display = 'none';
+
+  const HEXf = Array.from({length:256},(_,i)=>i.toString(16).padStart(2,'0'));
+  function toHexF(u8){let s='';for(let i=0;i<u8.length;i++)s+=HEXf[u8[i]];return s;}
+  const B58f = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  function b58(bytes){
+    let lead=0;for(const b of bytes){if(b!==0)break;lead++;}
+    let n=0n;for(const b of bytes)n=n*256n+BigInt(b);
+    let out='';while(n>0n){out=B58f[Number(n%58n)]+out;n/=58n;}
+    return '1'.repeat(lead)+out;
+  }
+
+  function deriveAddr(pk) {
+    const pub=secp.getPublicKey(pk,true);
+    const h160=ripemd160f(sha256f(pub));
+    const v=new Uint8Array(21);v[0]=0;v.set(h160,1);
+    const cs=sha256f(sha256f(v)).subarray(0,4);
+    const f=new Uint8Array(25);f.set(v);f.set(cs,21);
+    return b58(f);
+  }
+
+  let fbBatch=3, fbLastTs=performance.now(), fbDisp=0;
+
+  function fbLoop(now) {
+    if (cracked) return;
+    const dt=Math.min(now-fbLastTs,100); fbLastTs=now;
+    if (dt<11 && fbBatch<30) fbBatch++;
+    else if (dt>20 && fbBatch>1) fbBatch--;
+
+    for (let i=0;i<fbBatch;i++) {
+      try {
+        const pk  =secp.utils.randomPrivateKey();
+        const pub =secp.getPublicKey(pk,false);
+        const h160=ripemd160f(sha256f(pub));
+        const hex =toHexF(h160);
+        totalAttempts++; speedSample++;
+        const hit=SATOSHI_HASH160.get(hex);
+        if (hit) {
+          const privHex=toHexF(pk);
+          onMatch(privHex, deriveAddr(pk), hit[1]);
+          return;
+        }
+        if(++fbDisp>=100){
+          fbDisp=0;
+          lastDisplayPriv=toHexF(pk);
+          try{lastDisplayAddr=deriveAddr(pk);}catch{}
+        }
+      } catch {}
+    }
+    requestAnimationFrame(fbLoop);
+  }
+  requestAnimationFrame(fbLoop);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Restore a previous session match if present
+// ─────────────────────────────────────────────────────────────
 const savedKey = localStorage.getItem('CRACKED_PRIVKEY');
 if (savedKey) onMatch(
   savedKey,
@@ -759,60 +890,26 @@ if (savedKey) onMatch(
 );
 
 // ─────────────────────────────────────────────────────────────
-//  MAIN LOOP
+//  ANIMATION FRAME — UI only, no crypto
 // ─────────────────────────────────────────────────────────────
-let batchSize    = 3;    // adaptive, targeting ~14ms/frame
-let lastFrameTs  = performance.now();
-let logTick      = 0;
-let lastPrivHex  = '';
-let lastAddr     = '';
+let logTick = 0;
 
-function loop(now) {
+function loop() {
   if (cracked) return;
 
-  const dt = Math.min(now - lastFrameTs, 100);
-  lastFrameTs = now;
-
-  // Adaptive batch: grow if frame fast, shrink if slow
-  if (dt < 11 && batchSize < 25) batchSize++;
-  else if (dt > 20 && batchSize > 1) batchSize--;
-
-  // ── Generate & test keys ──
-  for (let i = 0; i < batchSize; i++) {
-    let privKey, h160hex, address, privHex;
-    try {
-      privKey  = secp.utils.randomPrivateKey();
-      h160hex  = deriveHash160Uncompressed(privKey); // check against Patoshi set
-      privHex  = toHex(privKey);
-      address  = deriveCompressedAddress(privKey);   // for display
-    } catch {
-      continue; // skip rare invalid key
-    }
-
-    totalAttempts++;
-    speedSample++;
-    lastPrivHex = privHex;
-    lastAddr    = address;
-
-    const hit = SATOSHI_HASH160.get(h160hex);
-    if (hit) { onMatch(privHex, hit[0], hit[1]); return; }
+  // Speed (sampled from aggregated worker counts)
+  const nowMs = Date.now();
+  if (nowMs - lastSpeedTs >= 600) {
+    currentSpeed  = Math.round(speedSample / ((nowMs - lastSpeedTs) / 1000));
+    speedSample   = 0;
+    lastSpeedTs   = nowMs;
   }
 
-  // ── Speed calculation (every 600ms) ──
-  const now2 = Date.now();
-  if (now2 - lastSpeedTs >= 600) {
-    currentSpeed    = Math.round(speedSample / ((now2 - lastSpeedTs) / 1000));
-    speedSample     = 0;
-    lastSpeedTs     = now2;
-  }
-
-  // ── Draw background ──
   drawRain();
 
-  // ── Update DOM ──
-  if (lastPrivHex) {
-    document.getElementById('cur-priv').textContent = lastPrivHex;
-    document.getElementById('cur-addr').textContent = lastAddr;
+  if (lastDisplayPriv) {
+    document.getElementById('cur-priv').textContent = lastDisplayPriv;
+    document.getElementById('cur-addr').textContent = lastDisplayAddr;
   }
 
   document.getElementById('sv-attempts').textContent = totalAttempts.toLocaleString();
@@ -824,10 +921,9 @@ function loop(now) {
   document.getElementById('sv-progress').textContent = pct;
   document.getElementById('prog-label').textContent  = 'PROGRESS: ' + pct;
 
-  // ── Update log every ~15 frames ──
-  if (++logTick >= 15 && lastAddr) {
+  if (++logTick >= 15 && lastDisplayAddr) {
     logTick = 0;
-    pushLog(totalAttempts, lastAddr);
+    pushLog(totalAttempts, lastDisplayAddr);
     renderLog();
   }
 
@@ -837,19 +933,18 @@ function loop(now) {
 requestAnimationFrame(loop);
 
 // ─────────────────────────────────────────────────────────────
-//  DEMO MATCH PREVIEW  (exposed to window for onclick)
+//  DEMO MATCH PREVIEW
 // ─────────────────────────────────────────────────────────────
 window.showDemoMatch = function() {
   const fakeKey = Array.from({length: 64}, () =>
     '0123456789abcdef'[Math.floor(Math.random() * 16)]
   ).join('');
 
-  // Pick a random real Patoshi address for the preview
-  const entries = [...SATOSHI_HASH160.values()];
-  const [demoAddr, demoBtc] = entries[Math.floor(Math.random() * entries.length)];
+  const vals              = [...SATOSHI_HASH160.values()];
+  const [demoAddr, demoBtc] = vals[Math.floor(Math.random() * vals.length)];
 
-  document.getElementById('m-privkey').textContent   = fakeKey;
-  document.getElementById('m-address').textContent   = demoAddr;
+  document.getElementById('m-privkey').textContent    = fakeKey;
+  document.getElementById('m-address').textContent    = demoAddr;
   document.getElementById('m-wallet-btc').textContent = `${demoBtc.toFixed(8)} BTC`;
 
   if (btcPrice !== null) {
