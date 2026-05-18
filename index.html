@@ -1005,14 +1005,14 @@ let engineRunning = true;
 let currentThrottle = 10;
 
 const HINTS = {
-  1:  'almost idle · negligible CPU',
-  5:  'minimal CPU · barely warm',
-  10: 'low CPU · safe for mobile',
-  20: 'light · still comfortable',
-  30: 'moderate · phone may warm',
-  50: 'medium · laptop fan may spin',
-  75: 'high · phone gets hot',
-  100:'full power · device will heat up',
+  1:  'basically a screensaver at this point',
+  5:  'lottery ticket energy · why not',
+  10: 'your phone stays cool · your odds stay zero',
+  20: 'warming up · still cooler than your chances',
+  30: 'phone getting cozy · Satoshi still unbothered',
+  50: 'fan spinning · 10⁶⁸ laughing at you',
+  75: 'device is sweating · so is your electricity bill',
+  100:'full send · your GPU vendor thanks you',
 };
 function throttleHint(v) {
   const keys = Object.keys(HINTS).map(Number).sort((a,b)=>a-b);
