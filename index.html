@@ -777,6 +777,7 @@ const LOG_MAX = 10;
 let log = [];
 
 function pushLog(n, addr) {
+  if (log.length > 0 && log[0].addr === addr) return;
   log.unshift({n, addr});
   if (log.length > LOG_MAX) log.pop();
 }
