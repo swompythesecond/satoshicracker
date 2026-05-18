@@ -378,6 +378,21 @@
       cursor: pointer;
       border-radius: 0;
     }
+    input.throttle-num {
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid #003300;
+      color: #00cc44;
+      font-size: 13px;
+      width: 42px;
+      text-align: right;
+      padding: 1px 3px;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    input.throttle-num::-webkit-inner-spin-button,
+    input.throttle-num::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input.throttle-num:focus { border-color: #00cc44; }
 
     sup { font-size: 8px; vertical-align: super; }
 
@@ -441,20 +456,6 @@
       </div>
     </div>
 
-    <!-- Engine controls -->
-    <div class="t-sec" style="padding:9px 16px">
-      <div class="throttle-row">
-        <button class="engine-btn" id="engine-btn" onclick="toggleEngine()">&#9646;&#9646; PAUSE</button>
-        <span style="color:#004400;font-size:11px;flex-shrink:0;min-width:64px">INTENSITY</span>
-        <input type="range" class="intensity-slider" id="throttle-slider"
-               min="5" max="100" value="10" step="5"
-               style="--pct:10%"
-               oninput="onThrottleInput(this)">
-        <span id="throttle-val" style="color:#00cc44;font-size:13px;font-weight:bold;min-width:36px;text-align:right">10%</span>
-        <span class="throttle-hint" id="engine-hint">low CPU · safe for mobile</span>
-      </div>
-    </div>
-
     <!-- Target -->
     <div class="t-sec">
       <div class="t-sec-label">TARGET — ALL SATOSHI NAKAMOTO (PATOSHI) WALLETS</div>
@@ -493,6 +494,23 @@
       <div style="font-size:9px;color:#004400;margin-bottom:4px;letter-spacing:1px">DERIVED P2PKH ADDRESS</div>
       <div class="key-box address" id="cur-addr">—</div>
       <div id="match-status">STATUS &nbsp; ✗ &nbsp; NO MATCH</div>
+    </div>
+
+    <!-- Engine controls -->
+    <div class="t-sec" style="padding:9px 16px">
+      <div class="throttle-row">
+        <button class="engine-btn" id="engine-btn" onclick="toggleEngine()">&#9646;&#9646; PAUSE</button>
+        <span style="color:#004400;font-size:11px;flex-shrink:0;min-width:64px">INTENSITY</span>
+        <input type="range" class="intensity-slider" id="throttle-slider"
+               min="1" max="100" value="10" step="1"
+               style="--pct:10%"
+               oninput="onThrottleInput(this)">
+        <input type="number" id="throttle-val" class="throttle-num"
+               min="1" max="100" value="10"
+               oninput="onThrottleType(this)"
+               onchange="onThrottleType(this)"><span style="color:#00cc44;font-size:13px">%</span>
+        <span class="throttle-hint" id="engine-hint">low CPU · safe for mobile</span>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -987,6 +1005,7 @@ let engineRunning = true;
 let currentThrottle = 10;
 
 const HINTS = {
+  1:  'almost idle · negligible CPU',
   5:  'minimal CPU · barely warm',
   10: 'low CPU · safe for mobile',
   20: 'light · still comfortable',
@@ -1027,13 +1046,24 @@ window.toggleEngine = function() {
   }
 };
 
-window.onThrottleInput = function(el) {
-  const v = parseInt(el.value, 10);
+function applyThrottle(v) {
+  v = Math.max(1, Math.min(100, v));
   currentThrottle = v;
-  el.style.setProperty('--pct', v + '%');
-  document.getElementById('throttle-val').textContent = v + '%';
-  document.getElementById('engine-hint').textContent  = throttleHint(v);
+  document.getElementById('throttle-slider').value = v;
+  document.getElementById('throttle-slider').style.setProperty('--pct', v + '%');
+  document.getElementById('throttle-val').value    = v;
+  document.getElementById('engine-hint').textContent = throttleHint(v);
   workers.forEach(w => w.postMessage({ type: 'setThrottle', throttle: v }));
+}
+
+window.onThrottleInput = function(el) {
+  applyThrottle(parseInt(el.value, 10));
+};
+
+window.onThrottleType = function(el) {
+  const v = parseInt(el.value, 10);
+  if (isNaN(v)) return;
+  applyThrottle(v);
 };
 
 // ─────────────────────────────────────────────────────────────
