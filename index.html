@@ -1005,14 +1005,14 @@ let engineRunning = true;
 let currentThrottle = 10;
 
 const HINTS = {
-  1:  'basically a screensaver at this point',
+  1:  'basically a screensaver · still theoretically possible',
   5:  'lottery ticket energy · why not',
-  10: 'your phone stays cool · your odds stay zero',
-  20: 'warming up · still cooler than your chances',
-  30: 'phone getting cozy · Satoshi still unbothered',
-  50: 'fan spinning · 10⁶⁸ laughing at you',
-  75: 'device is sweating · so is your electricity bill',
-  100:'full send · your GPU vendor thanks you',
+  10: 'chill mode · Satoshi probably not worried',
+  20: 'putting in the work · odds still astronomically bad',
+  30: 'getting serious · 10⁶⁸ still laughing though',
+  50: "now we're cooking · relatively speaking",
+  75: 'really going for it · respect the commitment',
+  100:'full send · Satoshi has been warned',
 };
 function throttleHint(v) {
   const keys = Object.keys(HINTS).map(Number).sort((a,b)=>a-b);
