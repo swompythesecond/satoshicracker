@@ -328,6 +328,57 @@
     ::-webkit-scrollbar-track { background: #000; }
     ::-webkit-scrollbar-thumb { background: #004400; }
 
+    /* ── Engine controls ── */
+    .engine-btn {
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid #004400;
+      color: #00cc44;
+      padding: 5px 16px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .engine-btn:hover { border-color: #00bb44; color: #00ff77; }
+    .engine-btn.paused { border-color: #664400; color: #cc8800; }
+    .engine-btn.paused:hover { border-color: #aa6600; color: #ffaa00; }
+
+    .throttle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .throttle-hint { font-size: 10px; color: #004400; letter-spacing: 0.5px; }
+
+    input[type=range].intensity-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      min-width: 100px;
+      height: 3px;
+      background: linear-gradient(to right, #00cc44 var(--pct,10%), #001800 var(--pct,10%));
+      border: 1px solid #002800;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range].intensity-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px;
+      background: #00cc44;
+      border: 1px solid #00ff55;
+      cursor: pointer;
+    }
+    input[type=range].intensity-slider::-moz-range-thumb {
+      width: 13px; height: 13px;
+      background: #00cc44;
+      border: 1px solid #00ff55;
+      cursor: pointer;
+      border-radius: 0;
+    }
+
     sup { font-size: 8px; vertical-align: super; }
 
     /* ── Explanation section ── */
@@ -387,6 +438,20 @@
         <button id="demo-btn" onclick="showDemoMatch()">PREVIEW MATCH SCREEN</button>
         <div class="dot loading" id="status-dot"></div>
         <span id="status-txt" style="color:#665500">LOADING</span>
+      </div>
+    </div>
+
+    <!-- Engine controls -->
+    <div class="t-sec" style="padding:9px 16px">
+      <div class="throttle-row">
+        <button class="engine-btn" id="engine-btn" onclick="toggleEngine()">&#9646;&#9646; PAUSE</button>
+        <span style="color:#004400;font-size:11px;flex-shrink:0;min-width:64px">INTENSITY</span>
+        <input type="range" class="intensity-slider" id="throttle-slider"
+               min="5" max="100" value="10" step="5"
+               style="--pct:10%"
+               oninput="onThrottleInput(this)">
+        <span id="throttle-val" style="color:#00cc44;font-size:13px;font-weight:bold;min-width:36px;text-align:right">10%</span>
+        <span class="throttle-hint" id="engine-hint">low CPU · safe for mobile</span>
       </div>
     </div>
 
@@ -567,13 +632,18 @@ function compressedAddress(privKey){
   return base58Encode(f);
 }
 
-const BATCH=150, REPORT_MS=350;
-self.onmessage=function({data}){
-  if(data.type!=='init')return;
-  const map=new Map(data.entries);
-  let count=0,lastPrivHex='',lastAddr='',lastReport=Date.now(),disp=0;
-  for(;;){
-    for(let i=0;i<BATCH;i++){
+// Duty-cycle loop: work for WINDOW_MS, then sleep proportional to throttle.
+// throttle 100 = full speed (sleep 0), throttle 10 = 10% duty (sleep 9x work time).
+const WINDOW_MS=50, REPORT_MS=350;
+let map,throttle=10,running=false;
+let count=0,lastPrivHex='',lastAddr='',lastReport=Date.now(),disp=0;
+
+function tick(){
+  if(!running)return;
+  const t0=Date.now(), deadline=t0+WINDOW_MS;
+  // inner mini-batches; check clock every 20 keys to stay near WINDOW_MS
+  do{
+    for(let i=0;i<20;i++){
       const pk=utils.randomPrivateKey();
       const h=hash160Hex(pk);
       count++;
@@ -582,15 +652,36 @@ self.onmessage=function({data}){
         const privHex=toHex(pk);
         let address='';try{address=compressedAddress(pk);}catch{}
         self.postMessage({type:'match',privHex,address,walletBtc:hit[1]});
-        return;
+        running=false;return;
       }
       if(++disp>=150){disp=0;lastPrivHex=toHex(pk);try{lastAddr=compressedAddress(pk);}catch{}}
     }
-    const now=Date.now();
-    if(now-lastReport>=REPORT_MS){
-      self.postMessage({type:'stats',count,lastPrivHex,lastAddr});
-      count=0;lastReport=now;
-    }
+  }while(Date.now()<deadline);
+
+  const elapsed=Date.now()-t0;
+  const now=Date.now();
+  if(now-lastReport>=REPORT_MS){
+    self.postMessage({type:'stats',count,lastPrivHex,lastAddr});
+    count=0;lastReport=now;
+  }
+  // sleep = work_time * (100-throttle)/throttle  →  correct duty cycle
+  const sleepMs=throttle>=100?0:Math.round(elapsed*(100-throttle)/throttle);
+  setTimeout(tick,sleepMs);
+}
+
+self.onmessage=function({data}){
+  if(data.type==='init'){
+    map=new Map(data.entries);
+    throttle=data.throttle||10;
+    running=true;
+    tick();
+  }else if(data.type==='setThrottle'){
+    throttle=data.throttle;
+    // if was paused by stop, don't auto-restart — only throttle affects sleep
+  }else if(data.type==='stop'){
+    running=false;
+  }else if(data.type==='start'){
+    if(!running){running=true;tick();}
   }
 };
 `;
@@ -790,7 +881,7 @@ try {
       workers.length = 0;
       startFallback();
     };
-    w.postMessage({ type: 'init', entries: satoshiEntries });
+    w.postMessage({ type: 'init', entries: satoshiEntries, throttle: 10 });
     workers.push(w);
   }
 
@@ -890,6 +981,62 @@ if (savedKey) onMatch(
 );
 
 // ─────────────────────────────────────────────────────────────
+//  ENGINE CONTROLS  (exposed to window for onclick handlers)
+// ─────────────────────────────────────────────────────────────
+let engineRunning = true;
+let currentThrottle = 10;
+
+const HINTS = {
+  5:  'minimal CPU · barely warm',
+  10: 'low CPU · safe for mobile',
+  20: 'light · still comfortable',
+  30: 'moderate · phone may warm',
+  50: 'medium · laptop fan may spin',
+  75: 'high · phone gets hot',
+  100:'full power · device will heat up',
+};
+function throttleHint(v) {
+  const keys = Object.keys(HINTS).map(Number).sort((a,b)=>a-b);
+  const k = keys.reduce((prev,cur) => (Math.abs(cur-v) < Math.abs(prev-v) ? cur : prev));
+  return HINTS[k] ?? '';
+}
+
+window.toggleEngine = function() {
+  engineRunning = !engineRunning;
+  const btn  = document.getElementById('engine-btn');
+  const dot  = document.getElementById('status-dot');
+  const stxt = document.getElementById('status-txt');
+  if (engineRunning) {
+    workers.forEach(w => w.postMessage({ type: 'start' }));
+    btn.textContent = '▎▎ PAUSE';
+    btn.classList.remove('paused');
+    dot.className  = 'dot running';
+    stxt.textContent = 'RUNNING';
+    stxt.style.color = '#00aa33';
+    speedSample  = 0;
+    lastSpeedTs  = Date.now();
+  } else {
+    workers.forEach(w => w.postMessage({ type: 'stop' }));
+    btn.textContent = '► RESUME';
+    btn.classList.add('paused');
+    dot.className  = 'dot loading';
+    stxt.textContent = 'PAUSED';
+    stxt.style.color = '#887700';
+    currentSpeed = 0;
+    document.getElementById('sv-speed').textContent = 'PAUSED';
+  }
+};
+
+window.onThrottleInput = function(el) {
+  const v = parseInt(el.value, 10);
+  currentThrottle = v;
+  el.style.setProperty('--pct', v + '%');
+  document.getElementById('throttle-val').textContent = v + '%';
+  document.getElementById('engine-hint').textContent  = throttleHint(v);
+  workers.forEach(w => w.postMessage({ type: 'setThrottle', throttle: v }));
+};
+
+// ─────────────────────────────────────────────────────────────
 //  ANIMATION FRAME — UI only, no crypto
 // ─────────────────────────────────────────────────────────────
 let logTick = 0;
@@ -897,12 +1044,13 @@ let logTick = 0;
 function loop() {
   if (cracked) return;
 
-  // Speed (sampled from aggregated worker counts)
-  const nowMs = Date.now();
-  if (nowMs - lastSpeedTs >= 600) {
-    currentSpeed  = Math.round(speedSample / ((nowMs - lastSpeedTs) / 1000));
-    speedSample   = 0;
-    lastSpeedTs   = nowMs;
+  if (engineRunning) {
+    const nowMs = Date.now();
+    if (nowMs - lastSpeedTs >= 600) {
+      currentSpeed = Math.round(speedSample / ((nowMs - lastSpeedTs) / 1000));
+      speedSample  = 0;
+      lastSpeedTs  = nowMs;
+    }
   }
 
   drawRain();
@@ -913,15 +1061,16 @@ function loop() {
   }
 
   document.getElementById('sv-attempts').textContent = totalAttempts.toLocaleString();
-  document.getElementById('sv-speed').textContent    = currentSpeed > 0
-    ? currentSpeed.toLocaleString() + ' keys/sec' : 'measuring...';
+  document.getElementById('sv-speed').textContent    = !engineRunning
+    ? 'PAUSED'
+    : currentSpeed > 0 ? currentSpeed.toLocaleString() + ' keys/sec' : 'measuring...';
   document.getElementById('sv-elapsed').textContent  = fmtElapsed();
 
   const pct = fmtProgress(totalAttempts);
   document.getElementById('sv-progress').textContent = pct;
   document.getElementById('prog-label').textContent  = 'PROGRESS: ' + pct;
 
-  if (++logTick >= 15 && lastDisplayAddr) {
+  if (engineRunning && ++logTick >= 15 && lastDisplayAddr) {
     logTick = 0;
     pushLog(totalAttempts, lastDisplayAddr);
     renderLog();
